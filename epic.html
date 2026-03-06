@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReelJCSMP</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf7f2;--surface:#fff;--paper:#f0ebe1;
+  --ink:#1a1a2e;--ink2:#333;--muted:#8a8070;
+  --border:#d8d0c4;--gold:#c9a84c;--gold2:#e8c97e;
+  --link:#1a0dab;--green:#2d6a2d;
+  --shadow:0 2px 16px rgba(26,26,46,.10);--r:50px;
+}
+[data-theme=dark]{
+  --bg:#0f0f1a;--surface:#1a1a2e;--paper:#16162a;
+  --ink:#e8e4dc;--ink2:#ccc;--muted:#8a8898;
+  --border:#2e2e46;--link:#8ab4f8;--green:#81c995;
+  --shadow:0 2px 16px rgba(0,0,0,.4);
+}
+html,body{background:var(--bg);color:var(--ink);font-family:'Source Sans 3',sans-serif;min-height:100%}
+a{color:inherit;text-decoration:none}
+button{font-family:'Source Sans 3',sans-serif}
+
+/* NAV */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 1.4rem;display:flex;align-items:center;gap:.9rem;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;background:linear-gradient(135deg,var(--ink) 0%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.nav-search{flex:1;min-width:120px;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);padding:0 .6rem 0 1rem;transition:border-color .2s,box-shadow .2s}
+.nav-search:focus-within{border-color:var(--gold);box-shadow:0 2px 12px rgba(201,168,76,.18)}
+.nav-search input{flex:1;border:none;outline:none;background:transparent;font-family:'Source Sans 3',sans-serif;font-size:.92rem;padding:.46rem .4rem;color:var(--ink)}
+.nav-search button{background:var(--ink);color:var(--bg);border:none;border-radius:var(--r);padding:.3rem .88rem;font-size:.81rem;font-weight:600;cursor:pointer;transition:background .2s;flex-shrink:0}
+.nav-search button:hover{background:var(--gold);color:var(--ink)}
+.nav-right{display:flex;align-items:center;gap:.4rem;margin-left:auto;flex-shrink:0}
+.nbtn{background:none;border:1.5px solid var(--border);border-radius:var(--r);padding:.28rem .8rem;font-size:.77rem;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.nbtn:hover,.nbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.nbtn.on:hover{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+
+/* HOME */
+#pg-home.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 62px);padding:2rem}
+.logo-big{font-family:'Playfair Display',serif;font-size:clamp(2.8rem,8vw,5.5rem);font-weight:700;background:linear-gradient(135deg,var(--ink) 0%,var(--gold) 60%,var(--gold2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;animation:fd .6s ease both}
+.logo-tag{font-size:.9rem;color:var(--muted);margin-top:.45rem;letter-spacing:3px;text-transform:uppercase;font-weight:300;text-align:center;animation:fd .6s .1s ease both}
+.home-form{width:100%;max-width:600px;margin-top:2.2rem;animation:fu .6s .15s ease both}
+.sbox{display:flex;align-items:center;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:0 .9rem 0 1.4rem;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s}
+.sbox:focus-within{border-color:var(--gold);box-shadow:0 4px 24px rgba(201,168,76,.18)}
+.sbox input{flex:1;border:none;outline:none;background:transparent;font-family:'Source Sans 3',sans-serif;font-size:1.03rem;padding:.82rem .7rem;color:var(--ink)}
+.sbox input::placeholder{color:var(--muted)}
+.sbox button{background:var(--ink);color:var(--bg);border:none;border-radius:var(--r);padding:.48rem 1.25rem;font-size:.88rem;font-weight:600;cursor:pointer;transition:background .2s;flex-shrink:0}
+.sbox button:hover{background:var(--gold);color:var(--ink)}
+.home-tabs{display:flex;flex-wrap:wrap;gap:.32rem;justify-content:center;margin-top:.85rem}
+
+/* TYPE TABS */
+.ttab{background:none;border:1.5px solid transparent;border-radius:var(--r);padding:.2rem .75rem;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .15s}
+.ttab:hover{color:var(--ink);border-color:var(--border)}
+.ttab.on{color:var(--ink);border-bottom:2.5px solid var(--gold);border-radius:0;font-weight:600}
+
+/* RESULTS */
+.res-tabs-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:.3rem 1.4rem 0}
+.res-tabs-inner{max-width:860px;margin:0 auto}
+.res-body{max-width:860px;margin:0 auto;padding:1.3rem 1.4rem 3rem}
+.res-stats{font-size:.81rem;color:var(--muted);margin-bottom:1rem}
+.sort-bar{display:flex;gap:1rem;align-items:center;margin-bottom:1.3rem;font-size:.8rem;flex-wrap:wrap;color:var(--muted)}
+.sl{color:var(--muted);cursor:pointer;padding-bottom:2px}
+.sl:hover{color:var(--ink)}
+.sl.on{color:var(--ink);border-bottom:1.5px solid var(--gold);font-weight:600}
+
+/* CARDS */
+.card{padding-bottom:1.3rem;animation:fu .35s ease both}
+.card+.card{border-top:1px solid var(--paper);padding-top:1.3rem}
+.card:nth-child(1){animation-delay:.03s}.card:nth-child(2){animation-delay:.07s}
+.card:nth-child(3){animation-delay:.11s}.card:nth-child(4){animation-delay:.15s}
+.card:nth-child(5){animation-delay:.19s}.card:nth-child(6){animation-delay:.22s}
+.card:nth-child(7){animation-delay:.26s}.card:nth-child(8){animation-delay:.29s}
+.card:nth-child(9){animation-delay:.33s}.card:nth-child(10){animation-delay:.36s}
+.card-type{font-size:.67rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.13rem}
+.card-url{font-size:.76rem;color:var(--green);display:block;margin-bottom:.17rem}
+.card-url:hover{text-decoration:underline}
+.card-title{font-family:'Playfair Display',serif;font-size:1.06rem;font-weight:400;color:var(--link);line-height:1.3;display:block;cursor:pointer}
+.card-title:hover{text-decoration:underline}
+.card-meta{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.73rem;color:var(--muted);margin:.24rem 0 .3rem}
+.card-meta b{color:var(--green)}
+.card-desc{font-size:.85rem;color:var(--ink2);line-height:1.52;max-width:610px}
+.svbtn{background:none;border:1px solid var(--border);border-radius:4px;padding:.15rem .48rem;font-size:.7rem;color:var(--muted);cursor:pointer;transition:all .15s;margin-top:.35rem}
+.svbtn:hover,.svbtn.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+
+/* PAGINATION */
+.pages{display:flex;gap:.3rem;justify-content:center;margin-top:2.2rem;flex-wrap:wrap}
+.pbtn{min-width:35px;height:35px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:.86rem;color:var(--ink);border:1.5px solid var(--border);cursor:pointer;transition:all .15s;background:none}
+.pbtn:hover,.pbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* ITEM */
+.item-body{max-width:860px;margin:0 auto;padding:2rem 1.4rem 4rem}
+.item-body h1{font-family:'Playfair Display',serif;font-size:clamp(1.3rem,3vw,1.95rem);font-weight:400;margin-bottom:.65rem;line-height:1.3}
+.item-meta{display:flex;flex-wrap:wrap;gap:.75rem;font-size:.78rem;color:var(--muted);margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.item-meta b{color:var(--green)}
+.ibtn{display:inline-block;background:var(--ink);color:var(--bg);padding:.46rem 1.15rem;border-radius:var(--r);font-size:.83rem;font-weight:600;margin-bottom:1.3rem;transition:background .2s;margin-right:.45rem;cursor:pointer;border:none}
+.ibtn:hover{background:var(--gold);color:var(--ink)}
+.ibtn.gold{background:var(--gold);color:var(--ink)}
+.ibtn.gold:hover{background:var(--ink);color:var(--bg)}
+.item-desc{font-size:.9rem;line-height:1.63;color:var(--ink2);max-width:640px;margin-bottom:2rem;white-space:pre-wrap}
+.files-h{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:.7rem}
+.ftable{width:100%;border-collapse:collapse;font-size:.8rem}
+.ftable th{text-align:left;padding:.36rem .52rem;background:var(--paper);color:var(--muted);font-weight:600;border-bottom:2px solid var(--border)}
+.ftable td{padding:.46rem .52rem;border-bottom:1px solid var(--paper);vertical-align:top}
+.ftable tr:hover td{background:var(--paper)}
+.ftable a{color:var(--link);word-break:break-all}
+.ftable a:hover{text-decoration:underline}
+.fsz{text-align:right;color:var(--muted);white-space:nowrap}
+
+/* FORMS */
+#pg-login.active,#pg-register.active{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 62px);padding:2rem}
+.fcard{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:2rem;width:100%;max-width:390px;box-shadow:var(--shadow)}
+.fcard h2{font-family:'Playfair Display',serif;margin-bottom:1.1rem;font-size:1.45rem}
+.fg{margin-bottom:.9rem}
+.fg label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.3rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.fg input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.56rem .85rem;font-family:'Source Sans 3',sans-serif;font-size:.92rem;background:var(--bg);color:var(--ink);outline:none;transition:border-color .2s}
+.fg input:focus{border-color:var(--gold)}
+.fsub{width:100%;background:var(--ink);color:var(--bg);border:none;border-radius:var(--r);padding:.6rem;font-size:.92rem;font-weight:600;cursor:pointer;transition:background .2s;margin-top:.35rem}
+.fsub:hover{background:var(--gold);color:var(--ink)}
+.flink{font-size:.8rem;color:var(--muted);text-align:center;margin-top:.8rem}
+.flink a{color:var(--gold);cursor:pointer}
+.fmsg{font-size:.83rem;padding:.45rem .72rem;border-radius:6px;margin-bottom:.85rem}
+.fmsg.err{background:#fff0f0;color:#c00;border:1px solid #fcc}
+.fmsg.ok{background:#f0fff4;color:#060;border:1px solid #9f9}
+[data-theme=dark] .fmsg.err{background:#2a1010;color:#f88;border-color:#500}
+[data-theme=dark] .fmsg.ok{background:#0a1f0a;color:#8f8;border-color:#050}
+
+/* PROFILE */
+.prof-body{max-width:860px;margin:0 auto;padding:2rem 1.4rem 4rem}
+.sec-title{font-family:'Playfair Display',serif;font-size:1.12rem;margin-bottom:.9rem}
+.slist{list-style:none}
+.sitem{display:flex;justify-content:space-between;align-items:center;padding:.68rem 0;border-bottom:1px solid var(--paper);gap:.8rem}
+.sitem a{color:var(--link);font-size:.9rem;cursor:pointer}
+.sitem a:hover{text-decoration:underline}
+.unsvbtn{background:none;border:1px solid var(--border);border-radius:4px;padding:.15rem .5rem;font-size:.7rem;color:var(--muted);cursor:pointer;transition:all .15s;flex-shrink:0}
+.unsvbtn:hover{background:#c00;color:#fff;border-color:#c00}
+.hlist{list-style:none}
+.hitem{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--paper);font-size:.87rem}
+.hitem a{color:var(--link);cursor:pointer}
+.hitem a:hover{text-decoration:underline}
+.htime{font-size:.7rem;color:var(--muted);flex-shrink:0}
+.dzone{border:1.5px solid #c00;border-radius:10px;padding:1.1rem;margin-top:2.2rem}
+.dzone h3{color:#c00;font-size:.92rem;margin-bottom:.5rem}
+.dbtn{background:#c00;color:#fff;border:none;border-radius:var(--r);padding:.4rem 1rem;font-size:.8rem;cursor:pointer;font-weight:600}
+.dbtn:hover{background:#900}
+.chip{display:inline-block;background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:.08rem .4rem;font-size:.68rem;color:var(--muted);margin-left:.28rem}
+
+/* UTILS */
+.loading{text-align:center;padding:4rem 1rem;color:var(--muted)}
+.spin{display:inline-block;width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:.7rem}
+.back{font-size:.78rem;color:var(--muted);cursor:pointer;margin-bottom:.75rem;display:inline-block}
+.back:hover{color:var(--ink)}
+.empty{text-align:center;padding:3.5rem 1rem;color:var(--muted)}
+.empty h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--ink);margin-bottom:.45rem}
+footer{text-align:center;padding:1.3rem;font-size:.75rem;color:var(--muted);border-top:1px solid var(--border)}
+footer a{color:var(--gold)}
+@keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fd{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <span class="nav-logo" id="nav-logo">ReelJCSMP</span>
+  <div class="nav-search" id="nav-searchbox" style="display:none">
+    <input id="nav-q" placeholder="Search archive.org…" autocomplete="off">
+    <button id="nav-sbtn">Search</button>
+  </div>
+  <div class="nav-right">
+    <button class="nbtn" id="theme-btn">🌙 Dark</button>
+    <span id="nav-auth"></span>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page" id="pg-home">
+  <div style="text-align:center">
+    <div class="logo-big">ReelJCSMP</div>
+    <div class="logo-tag">Internet Archive Search</div>
+  </div>
+  <div class="home-form">
+    <div class="sbox">
+      <span style="color:var(--muted);flex-shrink:0;margin-right:.3rem">🔍</span>
+      <input id="home-q" placeholder="Search 40 million items…" autocomplete="off">
+      <button id="home-sbtn">Search</button>
+    </div>
+    <div class="home-tabs" id="home-tabs"></div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="page" id="pg-results">
+  <div class="res-tabs-bar"><div class="res-tabs-inner" id="res-tabs"></div></div>
+  <div class="res-body">
+    <div class="res-stats" id="res-stats"></div>
+    <div class="sort-bar" id="sort-bar"></div>
+    <div id="res-list"></div>
+    <div class="pages" id="pages"></div>
+  </div>
+</div>
+
+<!-- ITEM -->
+<div class="page" id="pg-item">
+  <div class="item-body">
+    <span class="back" id="item-back">← Back</span>
+    <div id="item-content"></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="page" id="pg-login">
+  <div class="fcard">
+    <h2>Sign in</h2>
+    <div id="login-msg"></div>
+    <div class="fg"><label>Username</label><input id="lu" autocomplete="username"></div>
+    <div class="fg"><label>Password</label><input type="password" id="lp" autocomplete="current-password"></div>
+    <button class="fsub" id="login-btn">Sign in</button>
+    <div class="flink">No account? <a id="go-register">Register</a></div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="page" id="pg-register">
+  <div class="fcard">
+    <h2>Create account</h2>
+    <div id="reg-msg"></div>
+    <div class="fg"><label>Username</label><input id="ru" autocomplete="username"></div>
+    <div class="fg"><label>Password</label><input type="password" id="rp" autocomplete="new-password"></div>
+    <button class="fsub" id="reg-btn">Create account</button>
+    <div class="flink">Have an account? <a id="go-login">Sign in</a></div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="pg-profile">
+  <div class="prof-body" id="prof-body"></div>
+</div>
+
+<footer>Powered by <a href="https://archive.org" target="_blank">archive.org</a> &nbsp;·&nbsp; ReelJCSMP</footer>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// THEME
+// ─────────────────────────────────────────────────────────────────────────────
+var theme = localStorage.getItem('rj-theme') || 'light';
+document.documentElement.setAttribute('data-theme', theme);
+
+function applyTheme() {
+  var t = localStorage.getItem('rj-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-btn').textContent = t === 'dark' ? '☀️ Light' : '🌙 Dark';
+}
+document.getElementById('theme-btn').addEventListener('click', function() {
+  var cur = localStorage.getItem('rj-theme') || 'light';
+  localStorage.setItem('rj-theme', cur === 'dark' ? 'light' : 'dark');
+  applyTheme();
+});
+applyTheme();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACCOUNTS  (localStorage)
+// ─────────────────────────────────────────────────────────────────────────────
+function getAcc()    { try { return JSON.parse(localStorage.getItem('rj-accounts') || '{}'); } catch(e) { return {}; } }
+function putAcc(a)   { localStorage.setItem('rj-accounts', JSON.stringify(a)); }
+function getUser()   { return localStorage.getItem('rj-user') || ''; }
+function setUser(u)  { if (u) localStorage.setItem('rj-user', u); else localStorage.removeItem('rj-user'); }
+
+function hp(pw) {
+  var h = 5381;
+  for (var i = 0; i < pw.length; i++) h = ((h << 5) + h) ^ pw.charCodeAt(i);
+  return (h >>> 0).toString(36) + pw.length;
+}
+
+function doRegister(u, p) {
+  if (!u || !p) return { ok: false, msg: 'Username and password are required.' };
+  if (u.length < 2) return { ok: false, msg: 'Username must be at least 2 characters.' };
+  if (p.length < 4) return { ok: false, msg: 'Password must be at least 4 characters.' };
+  var a = getAcc();
+  if (a[u]) return { ok: false, msg: 'Username already taken.' };
+  a[u] = { pw: hp(p), saved: [], hist: [] };
+  putAcc(a);
+  return { ok: true };
+}
+
+function doLogin(u, p) {
+  if (!u || !p) return { ok: false, msg: 'Enter your username and password.' };
+  var a = getAcc();
+  if (!a[u]) return { ok: false, msg: 'Username not found.' };
+  if (a[u].pw !== hp(p)) return { ok: false, msg: 'Wrong password.' };
+  setUser(u);
+  return { ok: true };
+}
+
+function doLogout() { setUser(''); showPage('home'); }
+
+function isSaved(id) {
+  var u = getUser(); if (!u) return false;
+  return (getAcc()[u] && getAcc()[u].saved || []).some(function(s) { return s.id === id; });
+}
+
+function saveItem(id, title) {
+  var u = getUser(); if (!u) return;
+  var a = getAcc();
+  if (!a[u]) return;
+  if (!isSaved(id)) {
+    a[u].saved.push({ id: id, title: title, t: Date.now() });
+    putAcc(a);
+  }
+}
+
+function unsaveItem(id) {
+  var u = getUser(); if (!u) return;
+  var a = getAcc();
+  if (!a[u]) return;
+  a[u].saved = a[u].saved.filter(function(s) { return s.id !== id; });
+  putAcc(a);
+}
+
+function addHist(q) {
+  var u = getUser(); if (!u) return;
+  var a = getAcc(); if (!a[u]) return;
+  a[u].hist = a[u].hist.filter(function(h) { return h.q !== q; });
+  a[u].hist.unshift({ q: q, t: Date.now() });
+  a[u].hist = a[u].hist.slice(0, 50);
+  putAcc(a);
+}
+
+function getSaved()  { var u = getUser(); return u && getAcc()[u] ? getAcc()[u].saved : []; }
+function getHist()   { var u = getUser(); return u && getAcc()[u] ? getAcc()[u].hist  : []; }
+
+function deleteAccount() {
+  var u = getUser(); if (!u) return;
+  var a = getAcc();
+  delete a[u];
+  putAcc(a);
+  setUser('');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROUTING
+// ─────────────────────────────────────────────────────────────────────────────
+var PAGES = ['home','results','item','login','register','profile'];
+
+function showPage(name) {
+  PAGES.forEach(function(p) {
+    var el = document.getElementById('pg-' + p);
+    if (el) { el.classList.toggle('active', p === name); }
+  });
+  // nav search bar: show on results/item/profile, hide on home/login/register
+  var showSearch = ['results','item','profile'].indexOf(name) >= 0;
+  document.getElementById('nav-searchbox').style.display = showSearch ? '' : 'none';
+  updateNavAuth();
+}
+
+function updateNavAuth() {
+  var u = getUser();
+  var el = document.getElementById('nav-auth');
+  if (u) {
+    el.innerHTML = '<button class="nbtn" id="nav-profile-btn">' + esc(u) + '</button>' +
+                   '<button class="nbtn" id="nav-logout-btn">Sign out</button>';
+    document.getElementById('nav-profile-btn').addEventListener('click', function() { showProfile(); });
+    document.getElementById('nav-logout-btn').addEventListener('click', doLogout);
+  } else {
+    el.innerHTML = '<button class="nbtn" id="nav-login-btn">Sign in</button>' +
+                   '<button class="nbtn on" id="nav-reg-btn">Register</button>';
+    document.getElementById('nav-login-btn').addEventListener('click', function() { showPage('login'); });
+    document.getElementById('nav-reg-btn').addEventListener('click', function() { showPage('register'); });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtSz(n) {
+  n = parseInt(n) || 0;
+  if (n >= 1048576) return (n/1048576).toFixed(1)+' MB';
+  if (n >= 1024)    return Math.floor(n/1024)+' KB';
+  if (n > 0)        return n+' B';
+  return '—';
+}
+function fmtDl(n) {
+  n = parseInt(n) || 0;
+  if (n >= 1000000) return '⬇ '+(n/1000000).toFixed(1)+'M';
+  if (n >= 1000)    return '⬇ '+Math.floor(n/1000)+'K';
+  if (n > 0)        return '⬇ '+n;
+  return '';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MEDIA TYPES
+// ─────────────────────────────────────────────────────────────────────────────
+var MT = [
+  ['','🔍','All'],
+  ['texts','📚','Books & Texts'],
+  ['audio','🎵','Audio'],
+  ['movies','🎬','Video'],
+  ['software','💾','Software'],
+  ['image','🖼️','Images'],
+  ['data','📊','Data'],
+  ['etree','🎸','Live Music'],
+  ['collection','📁','Collections'],
+];
+function mtLabel(mt) {
+  var m = MT.filter(function(x){ return x[0] === mt; })[0];
+  return m ? [m[1], m[2]] : ['📄', mt || 'item'];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SEARCH STATE
+// ─────────────────────────────────────────────────────────────────────────────
+var S = { q: '', mt: '', sort: 'downloads', pg: 1 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HOME
+// ─────────────────────────────────────────────────────────────────────────────
+function buildHomeTabs() {
+  var el = document.getElementById('home-tabs');
+  el.innerHTML = MT.map(function(m) {
+    return '<button class="ttab' + (m[0] === S.mt ? ' on' : '') + '" data-mt="' + m[0] + '">' + m[1] + ' ' + m[2] + '</button>';
+  }).join('');
+  el.querySelectorAll('.ttab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      S.mt = this.dataset.mt;
+      el.querySelectorAll('.ttab').forEach(function(b) { b.classList.remove('on'); });
+      this.classList.add('on');
+    });
+  });
+}
+
+function runSearch() {
+  var q = (document.getElementById('home-q').value || '').trim();
+  if (!q) return;
+  S.q = q; S.pg = 1;
+  document.getElementById('nav-q').value = q;
+  showResults();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JSONP (no-server cross-origin calls to archive.org)
+// ─────────────────────────────────────────────────────────────────────────────
+var cbIdx = 0;
+function jsonp(url, cb) {
+  var name = '__rjcb' + (cbIdx++);
+  var s = document.createElement('script');
+  var done = false;
+  var timer = setTimeout(function() {
+    if (done) return; done = true;
+    cleanup(); cb(null, 'Timeout');
+  }, 14000);
+  function cleanup() {
+    clearTimeout(timer);
+    delete window[name];
+    if (s.parentNode) s.parentNode.removeChild(s);
+  }
+  window[name] = function(data) {
+    if (done) return; done = true;
+    cleanup(); cb(data, null);
+  };
+  s.onerror = function() {
+    if (done) return; done = true;
+    cleanup(); cb(null, 'Load error');
+  };
+  s.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + name;
+  document.head.appendChild(s);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SEARCH API
+// ─────────────────────────────────────────────────────────────────────────────
+var SORTS = { downloads: 'downloads desc', date: 'date desc', title: 'titleSorter asc', relevance: 'score desc' };
+
+function searchURL(q, mt, sort, pg) {
+  var query = q || '*';
+  if (mt) query = '(' + query + ') AND mediatype:' + mt;
+  var p = new URLSearchParams();
+  p.set('q', query);
+  p.append('sort[]', SORTS[sort] || 'downloads desc');
+  p.set('rows', '10');
+  p.set('page', String(pg));
+  p.set('output', 'json');
+  ['identifier','title','description','mediatype','creator','date','downloads','language'].forEach(function(f) {
+    p.append('fl[]', f);
+  });
+  return 'https://archive.org/advancedsearch.php?' + p.toString();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RESULTS PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+function showResults() {
+  showPage('results');
+  document.getElementById('nav-q').value = S.q;
+  renderResultTabs();
+  renderSortBar();
+  document.getElementById('res-stats').innerHTML = '';
+  document.getElementById('res-list').innerHTML = '<div class="loading"><div class="spin"></div><br>Searching…</div>';
+  document.getElementById('pages').innerHTML = '';
+
+  addHist(S.q);
+
+  jsonp(searchURL(S.q, S.mt, S.sort, S.pg), function(data, err) {
+    if (err || !data) {
+      document.getElementById('res-list').innerHTML = '<div class="loading" style="color:#c00">⚠ Search failed — check your internet connection and try again.</div>';
+      return;
+    }
+    var resp  = (data.response) || {};
+    var docs  = resp.docs  || [];
+    var total = resp.numFound || 0;
+    var start = (S.pg - 1) * 10 + 1;
+    var end   = Math.min(S.pg * 10, total);
+
+    document.getElementById('res-stats').innerHTML = total
+      ? 'About <b>' + total.toLocaleString() + '</b> results &nbsp;(' + start + '–' + end + ')'
+      : 'No results found.';
+
+    document.getElementById('res-list').innerHTML = docs.length
+      ? docs.map(buildCard).join('')
+      : '<div class="empty"><h2>No results found</h2><p>Try different keywords or another media type.</p></div>';
+
+    buildPagination(total);
+  });
+}
+
+function renderResultTabs() {
+  document.getElementById('res-tabs').innerHTML = '<div class="home-tabs" style="margin-top:0;padding:.4rem 0">' +
+    MT.map(function(m) {
+      return '<button class="ttab' + (m[0] === S.mt ? ' on' : '') + '" data-mt="' + m[0] + '">' + m[1] + ' ' + m[2] + '</button>';
+    }).join('') + '</div>';
+  document.getElementById('res-tabs').querySelectorAll('.ttab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      S.mt = this.dataset.mt; S.pg = 1;
+      showResults();
+    });
+  });
+}
+
+function renderSortBar() {
+  var labels = [['downloads','Most Downloaded'],['date','Newest'],['relevance','Relevance'],['title','Title']];
+  document.getElementById('sort-bar').innerHTML = '<span>Sort:</span>' +
+    labels.map(function(x) {
+      return '<span class="sl' + (S.sort === x[0] ? ' on' : '') + '" data-s="' + x[0] + '">' + x[1] + '</span>';
+    }).join('');
+  document.getElementById('sort-bar').querySelectorAll('.sl').forEach(function(el) {
+    el.addEventListener('click', function() {
+      S.sort = this.dataset.s; S.pg = 1;
+      showResults();
+    });
+  });
+}
+
+function buildCard(doc) {
+  var id      = doc.identifier || '';
+  var title   = doc.title || id || 'Untitled';
+  var mt      = doc.mediatype || '';
+  var date    = String(doc.date || '').slice(0, 10);
+  var creator = String(doc.creator || '').slice(0, 80);
+  var desc    = String(doc.description || '').replace(/\n/g,' ').trim();
+  if (desc.length > 220) desc = desc.slice(0, 220) + '…';
+  var dl  = fmtDl(doc.downloads);
+  var lbl = mtLabel(mt);
+  var saved = isSaved(id);
+  var u = getUser();
+
+  var meta = [];
+  if (date)    meta.push(esc(date));
+  if (creator) meta.push('by ' + esc(creator));
+  if (dl)      meta.push('<b>' + dl + '</b>');
+
+  var saveBtn = u
+    ? '<button class="svbtn' + (saved ? ' on' : '') + '" data-id="' + esc(id) + '" data-title="' + esc(title) + '">' + (saved ? '🔖 Saved' : '🔖 Save') + '</button>'
+    : '';
+
+  return '<div class="card">' +
+    '<div class="card-type">' + lbl[0] + ' ' + esc(lbl[1]) + '</div>' +
+    '<a class="card-url" href="https://archive.org/details/' + esc(id) + '" target="_blank">archive.org/details/' + esc(id) + '</a>' +
+    '<span class="card-title" data-id="' + esc(id) + '">' + esc(title) + '</span>' +
+    '<div class="card-meta">' + meta.join(' &nbsp;·&nbsp; ') + '</div>' +
+    (desc ? '<div class="card-desc">' + esc(desc) + '</div>' : '') +
+    saveBtn +
+    '</div>';
+}
+
+function buildPagination(total) {
+  var pages = Math.min(Math.ceil(total / 10), 50);
+  if (pages <= 1) { document.getElementById('pages').innerHTML = ''; return; }
+  var html = '';
+  if (S.pg > 1) html += '<button class="pbtn" data-p="' + (S.pg-1) + '">&#8249;</button>';
+  for (var p = Math.max(1, S.pg-4); p <= Math.min(pages, S.pg+4); p++) {
+    html += '<button class="pbtn' + (p === S.pg ? ' on' : '') + '" data-p="' + p + '">' + p + '</button>';
+  }
+  if (S.pg < pages) html += '<button class="pbtn" data-p="' + (S.pg+1) + '">&#8250;</button>';
+  document.getElementById('pages').innerHTML = html;
+  document.getElementById('pages').querySelectorAll('.pbtn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      S.pg = parseInt(this.dataset.p);
+      showResults();
+      window.scrollTo(0, 0);
+    });
+  });
+}
+
+// delegated click for cards
+document.getElementById('res-list').addEventListener('click', function(e) {
+  var title = e.target.closest('.card-title');
+  var sv    = e.target.closest('.svbtn');
+  if (title) { showItem(title.dataset.id); }
+  if (sv) {
+    var id = sv.dataset.id, t = sv.dataset.title;
+    if (isSaved(id)) { unsaveItem(id); sv.textContent = '🔖 Save'; sv.classList.remove('on'); }
+    else             { saveItem(id, t); sv.textContent = '🔖 Saved'; sv.classList.add('on'); }
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ITEM PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+var currentItemId = '';
+
+function showItem(id) {
+  currentItemId = id;
+  showPage('item');
+  document.getElementById('item-content').innerHTML = '<div class="loading"><div class="spin"></div><br>Loading…</div>';
+
+  jsonp('https://archive.org/metadata/' + encodeURIComponent(id), function(data, err) {
+    if (err || !data) {
+      document.getElementById('item-content').innerHTML = '<p style="color:#c00">Could not load item. Check your connection.</p>';
+      return;
+    }
+    var info  = data.metadata || {};
+    var files = data.files || [];
+    var title = info.title || id;
+
+    var metaParts = [];
+    [['creator','Creator'],['date','Date'],['publisher','Publisher'],['language','Language']].forEach(function(f) {
+      if (info[f[0]]) metaParts.push('<b>' + f[1] + ':</b> ' + esc(String(info[f[0]]).slice(0,100)));
+    });
+
+    var desc = String(info.description || '').trim();
+    var sorted = files.slice().sort(function(a,b){ return (parseInt(b.size)||0)-(parseInt(a.size)||0); }).slice(0,30);
+    var rows = sorted.map(function(f) {
+      var fname = f.name || '';
+      var url   = 'https://archive.org/download/' + encodeURIComponent(id) + '/' + encodeURIComponent(fname);
+      return '<tr><td><a href="' + url + '" target="_blank">' + esc(fname) + '</a></td><td>' + esc(f.format||'') + '</td><td class="fsz">' + fmtSz(f.size) + '</td></tr>';
+    }).join('');
+
+    var u = getUser();
+    var saved = isSaved(id);
+    var saveBtn = u ? '<button class="ibtn gold" id="item-sv">' + (saved ? '🔖 Saved' : '🔖 Save') + '</button>' : '';
+
+    document.getElementById('item-content').innerHTML =
+      '<h1>' + esc(title) + '</h1>' +
+      '<div class="item-meta">' + metaParts.join(' &nbsp;·&nbsp; ') + '</div>' +
+      '<a class="ibtn" href="https://archive.org/details/' + esc(id) + '" target="_blank">Open on archive.org ↗</a>' +
+      saveBtn +
+      (desc ? '<div class="item-desc">' + esc(desc.slice(0,2000)) + (desc.length > 2000 ? '…' : '') + '</div>' : '') +
+      (rows ? '<div class="files-h">Files <span class="chip">' + files.length + ' total</span></div>' +
+        '<table class="ftable"><thead><tr><th>Filename</th><th>Format</th><th>Size</th></tr></thead><tbody>' + rows + '</tbody></table>' : '');
+
+    var svBtn = document.getElementById('item-sv');
+    if (svBtn) {
+      svBtn.addEventListener('click', function() {
+        if (isSaved(id)) { unsaveItem(id); this.textContent = '🔖 Save'; }
+        else             { saveItem(id, title); this.textContent = '🔖 Saved'; }
+      });
+    }
+  });
+}
+
+document.getElementById('item-back').addEventListener('click', function() {
+  showPage('results');
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────────────────────────────────────
+function showMsg(elId, msg, isErr) {
+  var el = document.getElementById(elId);
+  el.innerHTML = msg ? '<div class="fmsg ' + (isErr ? 'err' : 'ok') + '">' + esc(msg) + '</div>' : '';
+}
+
+document.getElementById('login-btn').addEventListener('click', function() {
+  var u = document.getElementById('lu').value.trim();
+  var p = document.getElementById('lp').value;
+  var r = doLogin(u, p);
+  if (r.ok) {
+    showMsg('login-msg', '', false);
+    document.getElementById('lu').value = '';
+    document.getElementById('lp').value = '';
+    showPage('home');
+    buildHomeTabs();
+  } else {
+    showMsg('login-msg', r.msg, true);
+  }
+});
+document.getElementById('lp').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('login-btn').click();
+});
+
+document.getElementById('reg-btn').addEventListener('click', function() {
+  var u = document.getElementById('ru').value.trim();
+  var p = document.getElementById('rp').value;
+  var r = doRegister(u, p);
+  if (r.ok) {
+    showMsg('reg-msg', 'Account created! You can now sign in.', false);
+    document.getElementById('ru').value = '';
+    document.getElementById('rp').value = '';
+  } else {
+    showMsg('reg-msg', r.msg, true);
+  }
+});
+document.getElementById('rp').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('reg-btn').click();
+});
+
+document.getElementById('go-register').addEventListener('click', function() {
+  showMsg('reg-msg','',false);
+  showPage('register');
+});
+document.getElementById('go-login').addEventListener('click', function() {
+  showMsg('login-msg','',false);
+  showPage('login');
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROFILE
+// ─────────────────────────────────────────────────────────────────────────────
+function showProfile() {
+  var u = getUser();
+  if (!u) { showPage('login'); return; }
+  showPage('profile');
+
+  var saved = getSaved();
+  var hist  = getHist();
+
+  var savedHtml = saved.length
+    ? '<ul class="slist">' + saved.slice().reverse().map(function(s) {
+        return '<li class="sitem"><a data-id="' + esc(s.id) + '">' + esc(s.title || s.id) + '</a>' +
+               '<button class="unsvbtn" data-id="' + esc(s.id) + '">Remove</button></li>';
+      }).join('') + '</ul>'
+    : '<p style="color:var(--muted);font-size:.9rem;padding:.5rem 0">Nothing saved yet.</p>';
+
+  var histHtml = hist.length
+    ? '<ul class="hlist">' + hist.slice(0,20).map(function(h) {
+        var d = new Date(h.t).toLocaleDateString('en-GB',{month:'short',day:'numeric'});
+        return '<li class="hitem"><a data-q="' + esc(h.q) + '">' + esc(h.q) + '</a><span class="htime">' + d + '</span></li>';
+      }).join('') + '</ul>'
+    : '<p style="color:var(--muted);font-size:.9rem;padding:.5rem 0">No history yet.</p>';
+
+  document.getElementById('prof-body').innerHTML =
+    '<h1 style="font-family:\'Playfair Display\',serif;font-size:1.7rem;margin-bottom:1.8rem">👤 ' + esc(u) + '</h1>' +
+    '<div class="sec-title">🔖 Saved Items <span class="chip">' + saved.length + '</span></div>' + savedHtml +
+    '<div class="sec-title" style="margin-top:2.2rem">🕐 Search History</div>' + histHtml +
+    '<div class="dzone"><h3>⚠️ Danger Zone</h3>' +
+    '<p style="font-size:.84rem;color:var(--muted);margin-bottom:.7rem">Permanently delete your account and all saved data.</p>' +
+    '<button class="dbtn" id="del-acc">Delete account</button></div>';
+
+  document.getElementById('del-acc').addEventListener('click', function() {
+    if (confirm('Delete your account? This cannot be undone.')) {
+      deleteAccount();
+      showPage('home');
+    }
+  });
+  document.getElementById('prof-body').querySelectorAll('.sitem a').forEach(function(a) {
+    a.addEventListener('click', function() { showItem(this.dataset.id); });
+  });
+  document.getElementById('prof-body').querySelectorAll('.unsvbtn').forEach(function(btn) {
+    btn.addEventListener('click', function() { unsaveItem(this.dataset.id); showProfile(); });
+  });
+  document.getElementById('prof-body').querySelectorAll('.hitem a').forEach(function(a) {
+    a.addEventListener('click', function() { S.q = this.dataset.q; S.pg = 1; showResults(); });
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAV SEARCH + LOGO
+// ─────────────────────────────────────────────────────────────────────────────
+document.getElementById('nav-sbtn').addEventListener('click', function() {
+  var q = document.getElementById('nav-q').value.trim();
+  if (!q) return;
+  S.q = q; S.pg = 1;
+  showResults();
+});
+document.getElementById('nav-q').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('nav-sbtn').click();
+});
+document.getElementById('nav-logo').addEventListener('click', function() {
+  showPage('home');
+  buildHomeTabs();
+  document.getElementById('home-q').value = '';
+});
+document.getElementById('home-sbtn').addEventListener('click', runSearch);
+document.getElementById('home-q').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') runSearch();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────────────────────────────────────
+buildHomeTabs();
+showPage('home');
+setTimeout(function() { document.getElementById('home-q').focus(); }, 80);
+</script>
+</body>
+</html>
